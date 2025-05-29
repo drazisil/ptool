@@ -1,3 +1,4 @@
 -i https://pypi.org/simple
 capstone==5.0.6; python_version >= '3.8'
 pefile==2024.8.26; python_full_version >= '3.6.0'
+PyQt5
