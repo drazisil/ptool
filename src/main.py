@@ -3,8 +3,8 @@ import struct
 
 ctypes.CDLL("libc.so.6")  # Load the C standard library for ctypes
 # Define a class to represent the PE file header
-class PEFile():
-    fields = [
+class PEFile(ctypes.Structure):
+    __fields_ = [
         ("Signature", ctypes.c_char * 4),  # PE\0\0
         ("Machine", ctypes.c_uint16),      # Machine type
         ("NumberOfSections", ctypes.c_uint16),  # Number of sections
@@ -30,15 +30,15 @@ class PEFile():
         return self.size
     
     def __iter__(self):
-        for field in self.fields:
+        for field in self.__fields_:
             yield field[0], field[1].__name__
     def __getattr__(self, name):
-        for field in self.fields:
+        for field in self.__fields_:
             if field[0] == name:
                 return field[1]
         raise AttributeError(f"{name} not found in PEFile fields")
     def __setattr__(self, name, value):
-        for field in self.fields:
+        for field in self.__fields_:
             if field[0] == name:
                 if isinstance(value, field[1]):
                     object.__setattr__(self, name, value)
@@ -54,8 +54,8 @@ class PEFile():
         return struct.unpack(self.format(), data)
     
     def pack(self, *args):
-        if len(args) != len(self.fields):
-            raise ValueError(f"Expected {len(self.fields)} arguments, got {len(args)}")
+        if len(args) != len(self.__fields_):
+            raise ValueError(f"Expected {len(self.__fields_)} arguments, got {len(args)}")
         return struct.pack(self.format(), *args)
     
 # Main function to demonstrate the PEFile class    
@@ -68,8 +68,7 @@ def main():
         unpacked_data = pe.unpack(data)
     
     print("Unpacked PE File Header:")
-    for field, value in zip(pe.fields, unpacked_data):
-        print(f"{field[0]}: {value} ({field[1].__name__})")
+    print(f"Signature: {unpacked_data[0]}")
 
 
 
