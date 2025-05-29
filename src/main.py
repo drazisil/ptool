@@ -3,7 +3,7 @@ import struct
 
 ctypes.CDLL("libc.so.6")  # Load the C standard library for ctypes
 # Define a class to represent the PE file header
-class PEFile(ctypes.Structure):
+class PEFile():
     fields = [
         ("Signature", ctypes.c_char * 4),  # PE\0\0
         ("Machine", ctypes.c_uint16),      # Machine type
