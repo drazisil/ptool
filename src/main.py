@@ -1,75 +1,59 @@
-import ctypes
-import struct
+import pefile
+from capstone import Cs, CS_ARCH_X86, CS_MODE_32, CS_MODE_64
 
-ctypes.CDLL("libc.so.6")  # Load the C standard library for ctypes
-# Define a class to represent the PE file header
-class PEFile(ctypes.Structure):
-    __fields_ = [
-        ("Signature", ctypes.c_char * 4),  # PE\0\0
-        ("Machine", ctypes.c_uint16),      # Machine type
-        ("NumberOfSections", ctypes.c_uint16),  # Number of sections
-        ("TimeDateStamp", ctypes.c_uint32),  # Time and date stamp
-        ("PointerToSymbolTable", ctypes.c_uint32),  # Pointer to symbol table
-        ("NumberOfSymbols", ctypes.c_uint32),  # Number of symbols
-        ("SizeOfOptionalHeader", ctypes.c_uint16),  # Size of optional header
-        ("Characteristics", ctypes.c_uint16)  # Characteristics
-    ]
-
-    def __init__(self):
-        self.size = struct.calcsize(self.format())  # Dynamically calculate size
-
-    def format(self):
-        return "4sHHLLHH"  # Format string for struct packing/unpacking
-    def __sizeof__(self):
-        return self.size
-    def __repr__(self):
-        return f"PEFile(size={self.size})"
-    def __str__(self):
-        return f"PEFile(size={self.size})"
-    def __len__(self):
-        return self.size
-    
-    def __iter__(self):
-        for field in self.__fields_:
-            yield field[0], field[1].__name__
-    def __getattr__(self, name):
-        for field in self.__fields_:
-            if field[0] == name:
-                return field[1]
-        raise AttributeError(f"{name} not found in PEFile fields")
-    def __setattr__(self, name, value):
-        for field in self.__fields_:
-            if field[0] == name:
-                if isinstance(value, field[1]):
-                    object.__setattr__(self, name, value)
-                else:
-                    raise TypeError(f"Expected {field[1].__name__} for {name}, got {type(value).__name__}")
-                return
-        object.__setattr__(self, name, value)
-    
-
-    def unpack(self, data):
-        if len(data) != self.size:
-            raise ValueError(f"Data size {len(data)} does not match expected size {self.size}")
-        return struct.unpack(self.format(), data)
-    
-    def pack(self, *args):
-        if len(args) != len(self.__fields_):
-            raise ValueError(f"Expected {len(self.__fields_)} arguments, got {len(args)}")
-        return struct.pack(self.format(), *args)
-    
 # Main function to demonstrate the PEFile class    
 def main():
     file = "/home/drazisil/Downloads/MCity_d.exe"
 
-    pe = PEFile()
     with open(file, "rb") as f:
-        data = f.read(pe.size)
-        unpacked_data = pe.unpack(data)
-    
-    print("Unpacked PE File Header:")
-    print(f"Signature: {unpacked_data[0]}")
+        # Read the file in binary mode
+        data = f.read()
+    # Create a PEFile object
+    # and parse the PE header information
 
+        pe = pefile.PE(data=data)
+    
+        entry_point_rva = pe.OPTIONAL_HEADER.AddressOfEntryPoint
+        image_base = pe.OPTIONAL_HEADER.ImageBase
+        entry_point_va = image_base + entry_point_rva
+        print(f"Entry Point: {hex(entry_point_va)}")
+        print(f"Base Address: {hex(image_base)}")
+
+        # Identify if the entry point is a valid address
+        if pe.OPTIONAL_HEADER.AddressOfEntryPoint >= pe.OPTIONAL_HEADER.ImageBase:
+            print("The entry point is a valid address.")
+        else:
+            print("The entry point is not a valid address.")
+            exit(1)
+
+        # Find the section containing the entry point
+        for section in pe.sections:
+            section_start = section.VirtualAddress + image_base
+            section_end = section_start + section.Misc_VirtualSize
+            if section_start <= entry_point_va < section_end:
+                code_section = section
+                break
+        else:
+            print("Entry point not in any section!")
+            return
+
+        # Calculate offset in file for entry point
+        entry_offset = (entry_point_va - code_section.VirtualAddress - image_base) + code_section.PointerToRawData
+        # Read 32 bytes from entry point for disassembly
+        code = data[entry_offset:entry_offset+32]
+
+        # Determine architecture (32 or 64 bit)
+        if pe.FILE_HEADER.Machine == 0x14c:
+            md = Cs(CS_ARCH_X86, CS_MODE_32)
+        elif pe.FILE_HEADER.Machine == 0x8664:
+            md = Cs(CS_ARCH_X86, CS_MODE_64)
+        else:
+            print("Unknown architecture!")
+            return
+
+        print("Disassembled code at entry point:")
+        for i in md.disasm(code, entry_point_va):
+            print(f"0x{i.address:x}:\t{i.mnemonic}\t{i.op_str}")
 
 
 if __name__ == "__main__":
