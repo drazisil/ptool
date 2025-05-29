@@ -29,9 +29,16 @@ class PEToolGUI(QWidget):
         self.info_label = QLabel("No file loaded.")
         self.layout.addWidget(self.info_label)
 
+        self.start_btn = QPushButton("Start Emulation")
+        self.start_btn.setEnabled(False)
+        self.start_btn.clicked.connect(self.start_emulation)
+        self.layout.addWidget(self.start_btn)
+
         self.output = QTextEdit()
         self.output.setReadOnly(True)
         self.layout.addWidget(self.output)
+
+        self.analysis = None
 
     def open_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Open PE File", "", "Executable Files (*.exe);;All Files (*)")
@@ -40,15 +47,27 @@ class PEToolGUI(QWidget):
         self.info_label.setText(f"Loaded: {file_path}")
         disasm_bytes = self.disasm_spin.value()
         try:
-            analysis = analyze_pe_file(file_path, disasm_bytes=disasm_bytes)
-            out = [f"Entry Point: 0x{analysis['entry_point_va']:x}\nBase Address: 0x{analysis['image_base']:x}\n"]
+            self.analysis = analyze_pe_file(file_path, disasm_bytes=disasm_bytes)
+            out = [f"Entry Point: 0x{self.analysis['entry_point_va']:x}\nBase Address: 0x{self.analysis['image_base']:x}\n"]
             out.append("Disassembly at entry point:")
-            for i in analysis['disasm']:
+            for i in self.analysis['disasm']:
                 out.append(f"0x{i.address:x}:\t{i.mnemonic}\t{i.op_str}")
+            self.output.setText("\n".join(out))
+            self.start_btn.setEnabled(True)
+        except Exception as e:
+            self.output.setText(f"Error: {e}")
+            self.start_btn.setEnabled(False)
+
+    def start_emulation(self):
+        if not self.analysis:
+            self.output.setText("No PE file loaded.")
+            return
+        try:
             emu = emulate_entry(
-                analysis['pe'], analysis['image_base'], analysis['code'], analysis['arch'],
-                analysis['entry_point_va'], analysis['pe'].sections
+                self.analysis['pe'], self.analysis['image_base'], self.analysis['code'], self.analysis['arch'],
+                self.analysis['entry_point_va'], self.analysis['pe'].sections
             )
+            out = self.output.toPlainText().splitlines()
             if emu['emu_error']:
                 out.append(f"\nUnicorn emulation error: {emu['emu_error']}")
                 if hasattr(emu['emu_error'], 'address'):
