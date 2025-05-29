@@ -3,6 +3,7 @@ from capstone import Cs, CS_ARCH_X86, CS_MODE_32, CS_MODE_64
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESP, UC_X86_REG_RSP
 from emulator import setup_unicorn, add_call_stack_hook
 from peutils import load_pe, get_entry_info, disassemble_entry
+from gui import main as gui_main
 
 
 def print_registers(uc, reg_names, reg_name_map):
@@ -79,4 +80,4 @@ def main():
         print_stack(uc, UC_X86_REG_RSP, "RSP")
 
 if __name__ == "__main__":
-    main()
+    gui_main()

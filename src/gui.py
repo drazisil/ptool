@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QTextEdit
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QTextEdit, QHBoxLayout, QSpinBox
 )
 from pe_analysis import analyze_pe_file, emulate_entry
 
@@ -15,6 +15,17 @@ class PEToolGUI(QWidget):
         self.open_btn.clicked.connect(self.open_file)
         self.layout.addWidget(self.open_btn)
 
+        # Add disasm bytes selector
+        disasm_layout = QHBoxLayout()
+        disasm_label = QLabel("Disassembly bytes:")
+        self.disasm_spin = QSpinBox()
+        self.disasm_spin.setMinimum(1)
+        self.disasm_spin.setMaximum(4096)
+        self.disasm_spin.setValue(32)
+        disasm_layout.addWidget(disasm_label)
+        disasm_layout.addWidget(self.disasm_spin)
+        self.layout.addLayout(disasm_layout)
+
         self.info_label = QLabel("No file loaded.")
         self.layout.addWidget(self.info_label)
 
@@ -27,8 +38,9 @@ class PEToolGUI(QWidget):
         if not file_path:
             return
         self.info_label.setText(f"Loaded: {file_path}")
+        disasm_bytes = self.disasm_spin.value()
         try:
-            analysis = analyze_pe_file(file_path)
+            analysis = analyze_pe_file(file_path, disasm_bytes=disasm_bytes)
             out = [f"Entry Point: 0x{analysis['entry_point_va']:x}\nBase Address: 0x{analysis['image_base']:x}\n"]
             out.append("Disassembly at entry point:")
             for i in analysis['disasm']:

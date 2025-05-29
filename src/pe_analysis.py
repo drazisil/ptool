@@ -2,7 +2,7 @@ from peutils import load_pe, get_entry_info, disassemble_entry
 from emulator import setup_unicorn, add_call_stack_hook
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESP, UC_X86_REG_RSP
 
-def analyze_pe_file(file_path):
+def analyze_pe_file(file_path, disasm_bytes=32):
     pe, data = load_pe(file_path)
     entry_point_rva, image_base, entry_point_va = get_entry_info(pe)
     arch = 'x86' if pe.FILE_HEADER.Machine == 0x14c else 'x64'
@@ -16,7 +16,7 @@ def analyze_pe_file(file_path):
     else:
         raise RuntimeError("Entry point not in any section!")
     entry_offset = (entry_point_va - code_section.VirtualAddress - image_base) + code_section.PointerToRawData
-    code = data[entry_offset:entry_offset+32]
+    code = data[entry_offset:entry_offset+disasm_bytes]
     disasm = disassemble_entry(code, entry_point_va, arch)
     return {
         'pe': pe,
