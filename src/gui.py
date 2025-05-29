@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QTextEdit, QHBoxLayout, QSpinBox
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QTextEdit, QHBoxLayout, QSpinBox, QGroupBox, QGridLayout
 )
 from pe_analysis import analyze_pe_file, emulate_entry
 
@@ -28,6 +28,18 @@ class PEToolGUI(QWidget):
 
         self.info_label = QLabel("No file loaded.")
         self.layout.addWidget(self.info_label)
+
+        # Register group
+        self.reg_group = QGroupBox("Registers")
+        self.reg_grid = QGridLayout()
+        self.reg_labels = {}
+        reg_names = ["EAX", "EBX", "ECX", "EDX", "ESP", "RSP"]
+        for i, reg in enumerate(reg_names):
+            label = QLabel(f"{reg}: N/A")
+            self.reg_labels[reg] = label
+            self.reg_grid.addWidget(label, i // 2, i % 2)
+        self.reg_group.setLayout(self.reg_grid)
+        self.layout.addWidget(self.reg_group)
 
         self.start_btn = QPushButton("Start Emulation")
         self.start_btn.setEnabled(False)
@@ -83,6 +95,11 @@ class PEToolGUI(QWidget):
             out.append("\nRegister state after emulation:")
             for reg, val in emu['regs'].items():
                 out.append(f"{reg}: {val}")
+                if reg in self.reg_labels:
+                    self.reg_labels[reg].setText(f"{reg}: {val}")
+            # Show ESP/RSP
+            self.reg_labels['ESP'].setText(f"ESP: 0x{emu['sp_val']:x}") if 'ESP' in self.reg_labels else None
+            self.reg_labels['RSP'].setText(f"RSP: 0x{emu['sp_val']:x}") if 'RSP' in self.reg_labels else None
             out.append(f"{emu['sp_name']}: 0x{emu['sp_val']:x}")
             self.output.setText("\n".join(out))
         except Exception as e:

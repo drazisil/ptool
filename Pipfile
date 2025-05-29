@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 pefile = "*"
 capstone = "*"
+pyqt5 = "*"
 
 [dev-packages]
 
