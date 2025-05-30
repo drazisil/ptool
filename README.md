@@ -25,7 +25,7 @@ A graphical tool for loading, disassembling, and emulating Windows PE (Portable 
 
 ### 1. Clone the repository
 ```zsh
-git clone <your-repo-url>
+git clone https://github.com/drazisil/ptool.git
 cd ptool
 ```
 
