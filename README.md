@@ -1,7 +1,9 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (C) 2025 Molly Draven
-# This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
-# See LICENSE file for details.
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+Copyright (C) 2025 Molly Draven
+This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
+See LICENSE file for details.
+-->
 
 # PE Emulator/Disassembler
 
@@ -27,16 +29,16 @@ git clone <your-repo-url>
 cd ptool
 ```
 
-### 2. Install dependencies
+### 2. Install dependencies (choose one)
 #### Using Poetry (recommended)
 ```zsh
 poetry install
 ```
-#### Or using pipenv
+#### Using pipenv
 ```zsh
 pipenv install
 ```
-#### Or using requirements.txt
+#### Using requirements.txt
 ```zsh
 pip install -r requirements.txt
 ```
@@ -52,7 +54,7 @@ poetry run python src/main.py
 ```zsh
 pipenv run python src/main.py
 ```
-#### With a virtualenv
+#### With a virtualenv or system Python
 ```zsh
 python src/main.py
 ```
@@ -64,16 +66,34 @@ python src/main.py
 4. Click **Start Emulation** to emulate the entry point and view register/stack state and call stack trace.
 5. Click **About** for license and contact information.
 
+## Building a Standalone Binary
+
+To build a standalone binary (Linux):
+```zsh
+make build
+# or, manually:
+poetry run pyinstaller src/main.py --onefile --name pe-emulator \
+  --add-binary "/data/Code/ptool/.venv/lib/python3.13/site-packages/unicorn/lib/libunicorn.so.2:."
+```
+The binary will be in the `dist/` directory as `pe-emulator`.
+
 ## Project Structure
+
 - `src/peutils.py` – PE file utilities
 - `src/emulator.py` – Unicorn emulation helpers
 - `src/pe_analysis.py` – High-level PE analysis and emulation logic
 - `src/gui.py` – PyQt5 GUI
 - `src/main.py` – Launches the GUI
+- `Makefile` – Common development tasks (install, lint, format, test, build, clean)
+- `pyproject.toml` – Poetry/packaging configuration
+- `requirements.txt`, `Pipfile` – Exported dependency lists
+- `LICENSE`, `COPYING` – License information
 
 ## Development
-- Edit the `Pipfile` or `pyproject.toml` to manage dependencies.
-- Run `poetry install` or `pipenv install` to update your environment.
+
+- Edit `pyproject.toml` (or `Pipfile`) to manage dependencies.
+- Run `make install` or `poetry install` to set up your environment.
+- Use `make lint`, `make format`, `make test`, and `make build` for common tasks.
 - To run tests (if/when added):
   ```zsh
   poetry run pytest
