@@ -5,7 +5,7 @@
 
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QTextEdit, QHBoxLayout, QSpinBox, QGroupBox, QGridLayout
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QTextEdit, QHBoxLayout, QSpinBox, QGroupBox, QGridLayout, QMessageBox
 )
 from pe_analysis import analyze_pe_file, emulate_entry
 
@@ -15,6 +15,10 @@ class PEToolGUI(QWidget):
         self.setWindowTitle("PE Emulator/Disassembler")
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
+
+        self.about_btn = QPushButton("About")
+        self.about_btn.clicked.connect(self.show_about)
+        self.layout.addWidget(self.about_btn)
 
         self.open_btn = QPushButton("Open PE File")
         self.open_btn.clicked.connect(self.open_file)
@@ -109,6 +113,25 @@ class PEToolGUI(QWidget):
             self.output.setText("\n".join(out))
         except Exception as e:
             self.output.setText(f"Error: {e}")
+
+    def show_about(self):
+        about_text = (
+            "<b>PE Emulator/Disassembler</b><br>"
+            "Copyright (C) 2025 Molly Draven<br>"
+            "<br>"
+            "This program is free software: you can redistribute it and/or modify "
+            "it under the terms of the GNU General Public License as published by "
+            "the Free Software Foundation, either version 3 of the License, or "
+            "(at your option) any later version.<br><br>"
+            "This program is distributed in the hope that it will be useful, "
+            "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the "
+            "GNU General Public License for more details.<br><br>"
+            "You should have received a copy of the GNU General Public License "
+            "along with this program.  If not, see <a href='https://www.gnu.org/licenses/'>https://www.gnu.org/licenses/</a>.<br><br>"
+            "Contact: molly.crendraven@gmail.com"
+        )
+        QMessageBox.about(self, "About PE Emulator/Disassembler", about_text)
 
 def main():
     app = QApplication(sys.argv)
