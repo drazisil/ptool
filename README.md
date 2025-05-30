@@ -42,14 +42,6 @@ poetry install
 ```zsh
 poetry run python src/main.py
 ```
-#### With pipenv
-```zsh
-pipenv run python src/main.py
-```
-#### With a virtualenv or system Python
-```zsh
-python src/main.py
-```
 
 ### How to use the application
 1. Click **Open PE File** and select a Windows .exe file.
