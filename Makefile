@@ -27,9 +27,13 @@ format:
 test:
 	poetry run pytest || echo 'No tests found.'
 
+PYTHON_ENV=.venv
+UNICORN_LIB=$(PYTHON_ENV)/lib/python3.13/site-packages/unicorn/lib/libunicorn.so.2
+
 build: install
+	PYTHONPATH=$(PYTHON_ENV)/lib/python3.13/site-packages \
 	poetry run pyinstaller src/main.py --onefile --name pe-emulator \
-		--add-binary "/data/Code/ptool/.venv/lib/python3.13/site-packages/unicorn/lib/libunicorn.so.2:." \
+		--add-binary "$(UNICORN_LIB):." \
 		--hidden-import unicorn.unicorn_py3.arch.intel \
 		--hidden-import unicorn.unicorn_py3.arch
 
