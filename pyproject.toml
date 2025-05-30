@@ -1,0 +1,28 @@
+[project]
+name = "ptool"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Molly Draven",email = "drazi@duck.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pefile (>=2024.8.26,<2025.0.0)",
+    "capstone (>=5.0.6,<6.0.0)",
+    "pyqt5 (>=5.15.11,<6.0.0)",
+    "unicorn (>=2.1.3,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+coverage = "^7.8.2"
+
