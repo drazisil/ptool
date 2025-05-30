@@ -34,14 +34,6 @@ cd ptool
 ```zsh
 poetry install
 ```
-#### Using pipenv
-```zsh
-pipenv install
-```
-#### Using requirements.txt
-```zsh
-pip install -r requirements.txt
-```
 
 ## Usage
 

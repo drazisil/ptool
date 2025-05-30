@@ -27,7 +27,7 @@ format:
 test:
 	poetry run pytest || echo 'No tests found.'
 
-build:
+build: install
 	poetry run pyinstaller src/main.py --onefile --name pe-emulator \
 		--add-binary "/data/Code/ptool/.venv/lib/python3.13/site-packages/unicorn/lib/libunicorn.so.2:." \
 		--hidden-import unicorn.unicorn_py3.arch.intel \
