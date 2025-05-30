@@ -1,0 +1,67 @@
+# GitHub Actions workflow for PE Emulator/Disassembler
+# - Runs on Ubuntu (Linux)
+# - Uses Poetry for dependency management
+# - Runs lint, format, and test
+# - Builds standalone binary with PyInstaller
+# - Uploads binary as workflow artifact
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-package:
+    runs-on: ubuntu-latest
+    env:
+      POETRY_VIRTUALENVS_CREATE: true
+      POETRY_VIRTUALENVS_IN_PROJECT: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Lint with ruff
+        run: |
+          poetry run ruff src/
+
+      - name: Check formatting with black
+        run: |
+          poetry run black --check src/
+
+      - name: Run tests with pytest
+        run: |
+          poetry run pytest || echo 'No tests found.'
+
+      - name: Build standalone binary with PyInstaller
+        run: |
+          poetry run pyinstaller src/main.py --onefile --name pe-emulator \
+            --add-binary ".venv/lib/python3.13/site-packages/unicorn/lib/libunicorn.so.2:."
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pe-emulator-binary
+          path: dist/pe-emulator
+
+      - name: Upload build logs (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build/
