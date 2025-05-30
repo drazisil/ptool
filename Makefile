@@ -19,7 +19,7 @@ install:
 	poetry install
 
 lint:
-	poetry run ruff src/
+	poetry run ruff check src
 
 format:
 	poetry run black src/
