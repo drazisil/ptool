@@ -3,6 +3,7 @@
 # This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
 # See LICENSE file for details.
 
+from typing import Any
 import sys
 from PyQt5.QtWidgets import (
     QApplication,
@@ -18,23 +19,23 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QMessageBox,
 )
-from pe_analysis import analyze_pe_file, emulate_entry
+from pe_analysis import analyze_pe_file, emulate_entry  # type: ignore
 
 
 class PEToolGUI(QWidget):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("PE Emulator/Disassembler")
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.main_layout = QVBoxLayout()
+        self.setLayout(self.main_layout)
 
         self.about_btn = QPushButton("About")
         self.about_btn.clicked.connect(self.show_about)
-        self.layout.addWidget(self.about_btn)
+        self.main_layout.addWidget(self.about_btn)
 
         self.open_btn = QPushButton("Open PE File")
         self.open_btn.clicked.connect(self.open_file)
-        self.layout.addWidget(self.open_btn)
+        self.main_layout.addWidget(self.open_btn)
 
         # Add disasm bytes selector
         disasm_layout = QHBoxLayout()
@@ -45,35 +46,35 @@ class PEToolGUI(QWidget):
         self.disasm_spin.setValue(32)
         disasm_layout.addWidget(disasm_label)
         disasm_layout.addWidget(self.disasm_spin)
-        self.layout.addLayout(disasm_layout)
+        self.main_layout.addLayout(disasm_layout)
 
         self.info_label = QLabel("No file loaded.")
-        self.layout.addWidget(self.info_label)
+        self.main_layout.addWidget(self.info_label)
 
         # Register group
         self.reg_group = QGroupBox("Registers")
         self.reg_grid = QGridLayout()
-        self.reg_labels = {}
+        self.reg_labels: dict[str, QLabel] = {}
         reg_names = ["EAX", "EBX", "ECX", "EDX", "ESP", "RSP"]
         for i, reg in enumerate(reg_names):
             label = QLabel(f"{reg}: N/A")
             self.reg_labels[reg] = label
             self.reg_grid.addWidget(label, i // 2, i % 2)
         self.reg_group.setLayout(self.reg_grid)
-        self.layout.addWidget(self.reg_group)
+        self.main_layout.addWidget(self.reg_group)
 
         self.start_btn = QPushButton("Start Emulation")
         self.start_btn.setEnabled(False)
         self.start_btn.clicked.connect(self.start_emulation)
-        self.layout.addWidget(self.start_btn)
+        self.main_layout.addWidget(self.start_btn)
 
         self.output = QTextEdit()
         self.output.setReadOnly(True)
-        self.layout.addWidget(self.output)
+        self.main_layout.addWidget(self.output)
 
-        self.analysis = None
+        self.analysis: dict[str, Any] | None = None
 
-    def open_file(self):
+    def open_file(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open PE File", "", "Executable Files (*.exe);;All Files (*)"
         )
@@ -95,7 +96,7 @@ class PEToolGUI(QWidget):
             self.output.setText(f"Error: {e}")
             self.start_btn.setEnabled(False)
 
-    def start_emulation(self):
+    def start_emulation(self) -> None:
         if not self.analysis:
             self.output.setText("No PE file loaded.")
             return
@@ -116,7 +117,7 @@ class PEToolGUI(QWidget):
                         f"Invalid memory access at address: 0x{emu['emu_error'].address:x}"
                     )
                 if emu["ip_reg"] is not None:
-                    out.append(f"{emu['sp_name']} at error: 0x{emu['ip_reg']:x}")
+                    out.append(f"IP at error: 0x{emu['ip_reg']:x}")
                 if emu["call_stack"]:
                     out.append("Simulated call stack trace:")
                     for addr in reversed(emu["call_stack"]):
@@ -140,11 +141,14 @@ class PEToolGUI(QWidget):
                 else None
             )
             out.append(f"{emu['sp_name']}: 0x{emu['sp_val']:x}")
+            # Show the IP register
+            if emu["ip_reg"] is not None:
+                out.append(f"IP: 0x{emu['ip_reg']:x}")
             self.output.setText("\n".join(out))
         except Exception as e:
             self.output.setText(f"Error: {e}")
 
-    def show_about(self):
+    def show_about(self) -> None:
         about_text = (
             "<b>PE Emulator/Disassembler</b><br>"
             "Copyright (C) 2025 Molly Draven<br>"
@@ -164,7 +168,7 @@ class PEToolGUI(QWidget):
         QMessageBox.about(self, "About PE Emulator/Disassembler", about_text)
 
 
-def main():
+def main() -> None:
     app = QApplication(sys.argv)
     window = PEToolGUI()
     window.show()
