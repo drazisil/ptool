@@ -5,12 +5,20 @@
 
 from peutils import load_pe, get_entry_info, disassemble_entry
 from emulator import setup_unicorn, add_call_stack_hook
-from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESP, UC_X86_REG_RSP
+from unicorn.x86_const import (
+    UC_X86_REG_EAX,
+    UC_X86_REG_EBX,
+    UC_X86_REG_ECX,
+    UC_X86_REG_EDX,
+    UC_X86_REG_ESP,
+    UC_X86_REG_RSP,
+)
+
 
 def analyze_pe_file(file_path, disasm_bytes=32):
     pe, data = load_pe(file_path)
     entry_point_rva, image_base, entry_point_va = get_entry_info(pe)
-    arch = 'x86' if pe.FILE_HEADER.Machine == 0x14c else 'x64'
+    arch = "x86" if pe.FILE_HEADER.Machine == 0x14C else "x64"
     # Find code section
     for section in pe.sections:
         section_start = section.VirtualAddress + image_base
@@ -20,18 +28,21 @@ def analyze_pe_file(file_path, disasm_bytes=32):
             break
     else:
         raise RuntimeError("Entry point not in any section!")
-    entry_offset = (entry_point_va - code_section.VirtualAddress - image_base) + code_section.PointerToRawData
-    code = data[entry_offset:entry_offset+disasm_bytes]
+    entry_offset = (
+        entry_point_va - code_section.VirtualAddress - image_base
+    ) + code_section.PointerToRawData
+    code = data[entry_offset : entry_offset + disasm_bytes]
     disasm = disassemble_entry(code, entry_point_va, arch)
     return {
-        'pe': pe,
-        'data': data,
-        'entry_point_va': entry_point_va,
-        'image_base': image_base,
-        'arch': arch,
-        'code': code,
-        'disasm': disasm
+        "pe": pe,
+        "data": data,
+        "entry_point_va": entry_point_va,
+        "image_base": image_base,
+        "arch": arch,
+        "code": code,
+        "disasm": disasm,
     }
+
 
 def emulate_entry(pe, image_base, code, arch, entry_point_va, sections):
     uc = setup_unicorn(pe, image_base, code, sections, arch)
@@ -43,29 +54,29 @@ def emulate_entry(pe, image_base, code, arch, entry_point_va, sections):
         uc.emu_start(entry_point_va, entry_point_va + 8)
     except Exception as e:
         emu_error = e
-        if arch == 'x86':
+        if arch == "x86":
             ip_reg = uc.reg_read(0x20)
         else:
-            ip_reg = uc.reg_read(0x2a)
+            ip_reg = uc.reg_read(0x2A)
     reg_name_map = {
         UC_X86_REG_EAX: "EAX",
         UC_X86_REG_EBX: "EBX",
         UC_X86_REG_ECX: "ECX",
-        UC_X86_REG_EDX: "EDX"
+        UC_X86_REG_EDX: "EDX",
     }
     reg_names = [UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX]
     regs = {reg_name_map.get(reg, str(reg)): uc.reg_read(reg) for reg in reg_names}
-    if arch == 'x86':
+    if arch == "x86":
         sp_val = uc.reg_read(UC_X86_REG_ESP)
-        sp_name = 'ESP'
+        sp_name = "ESP"
     else:
         sp_val = uc.reg_read(UC_X86_REG_RSP)
-        sp_name = 'RSP'
+        sp_name = "RSP"
     return {
-        'emu_error': emu_error,
-        'ip_reg': ip_reg,
-        'call_stack': call_stack,
-        'regs': regs,
-        'sp_val': sp_val,
-        'sp_name': sp_name
+        "emu_error": emu_error,
+        "ip_reg": ip_reg,
+        "call_stack": call_stack,
+        "regs": regs,
+        "sp_val": sp_val,
+        "sp_name": sp_name,
     }
