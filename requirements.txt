@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 Molly Draven
+# This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
+# See LICENSE file for details.
+
 -i https://pypi.org/simple
 capstone==5.0.6; python_version >= '3.8'
 pefile==2024.8.26; python_full_version >= '3.6.0'

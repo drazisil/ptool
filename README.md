@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 Molly Draven
+# This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
+# See LICENSE file for details.
+
 # PE Emulator/Disassembler
 
 This project is a graphical tool for loading, disassembling, and emulating Windows PE (Portable Executable) files. It uses Python, PyQt5 for the GUI, and leverages pefile, capstone, and unicorn for PE parsing, disassembly, and emulation.

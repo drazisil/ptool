@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025 Molly Draven
+# This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
+# See LICENSE file for details.
+
 from peutils import load_pe, get_entry_info, disassemble_entry
 from emulator import setup_unicorn, add_call_stack_hook
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESP, UC_X86_REG_RSP
