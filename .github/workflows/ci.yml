@@ -36,23 +36,18 @@ jobs:
         run: |
           poetry install
 
-      - name: Lint with ruff
-        run: |
-          poetry run ruff src/
+      - name: Lint
+        run: make lint
 
-      - name: Check formatting with black
-        run: |
-          poetry run black --check src/
+      - name: Format Check
+        run: make format
 
-      - name: Run tests with pytest
-        run: |
-          poetry run pytest || echo 'No tests found.'
+      - name: Test
+        run: make test
 
-      - name: Build standalone binary with PyInstaller
-        run: |
-          poetry run pyinstaller src/main.py --onefile --name pe-emulator \
-            --add-binary ".venv/lib/python3.13/site-packages/unicorn/lib/libunicorn.so.2:."
-
+      - name: Build
+        run: make build
+        
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
