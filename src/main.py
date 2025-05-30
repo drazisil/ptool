@@ -3,8 +3,6 @@
 # This file is part of the PE Emulator/Disassembler project, licensed under GPLv3.
 # See LICENSE file for details.
 
-import pefile
-from capstone import Cs, CS_ARCH_X86, CS_MODE_32, CS_MODE_64
 from unicorn.x86_const import UC_X86_REG_EAX, UC_X86_REG_EBX, UC_X86_REG_ECX, UC_X86_REG_EDX, UC_X86_REG_ESP, UC_X86_REG_RSP
 from emulator import setup_unicorn, add_call_stack_hook
 from peutils import load_pe, get_entry_info, disassemble_entry
